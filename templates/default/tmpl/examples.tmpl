@@ -6,6 +6,10 @@
         if (example.caption) {
     ?>
         <p class="code-caption"><?js= example.caption ?></p>
+    <?js }
+        if (example.markup) {
+    ?>
+        <pre class="prettyprint"><code><?js= example.markup ?></p></code></pre>
     <?js } ?>
     <pre class="prettyprint"><code><?js= self.htmlsafe(example.code) ?></code></pre>
 <?js
