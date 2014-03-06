@@ -3,6 +3,7 @@
   "version": "3.3.0-dev",
   "revision": "1393969686818",
   "description": "An API documentation generator for JavaScript.",
+  "private": true,
   "keywords": [
     "documentation",
     "javascript"
