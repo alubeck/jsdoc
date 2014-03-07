@@ -115,6 +115,7 @@ function getPathFromDoclet(doclet) {
 }
     
 function generate(title, docs, filename, resolveLinks) {
+
     resolveLinks = resolveLinks === false ? false : true;
 
     var docData = {
@@ -264,6 +265,19 @@ function buildNav(members) {
         
         nav += '</ul>';
     }
+
+
+    if (members.kobinding.length) {
+        nav += '<h3>KO Bindings</h3><ul>';
+        members.kobinding.forEach(function(b) {
+            if ( !hasOwnProp.call(seen, b.longname) ) {
+                nav += '<li>'+linkto(b.longname, b.name, false, false) + '</li>';
+            }
+            seen[b.longname] = true;
+        });
+        nav += '</ul>';
+    }
+
     
     if (members.mixins.length) {
         nav += '<h3>Mixins</h3><ul>';
@@ -307,6 +321,14 @@ function buildNav(members) {
 }
 
 
+function lookForMyStuff(docDB) {
+
+    docDB(function() {
+        return true;
+    });
+    return docDB;
+}
+
 /**
     @param {TAFFY} taffyData See <http://taffydb.com/>.
     @param {object} opts
@@ -335,7 +357,11 @@ exports.publish = function(taffyData, opts, tutorials) {
     // set up tutorials for helper
     helper.setTutorials(tutorials);
 
-    data = helper.prune(data);
+    //data = lookForMyStuff(data);
+    //don't prune data in our template
+    //data = helper.prune(data);
+
+
     data.sort('longname, version, since');
     helper.addEventListeners(data);
 
@@ -470,6 +496,10 @@ exports.publish = function(taffyData, opts, tutorials) {
     });
     
     var members = helper.getMembers(data);
+    
+    //identify knockout binding handlers
+    members.kobinding = find({memberof: 'ko.bindingHandlers'});
+
     members.tutorials = tutorials.children;
 
     // add template helpers
@@ -501,6 +531,9 @@ exports.publish = function(taffyData, opts, tutorials) {
             [{kind: 'mainpage', readme: opts.readme, longname: (opts.mainpagetitle) ? opts.mainpagetitle : 'Main Page'}]
         ).concat(files),
     indexUrl);
+    
+    var kobinding = taffy(members.kobinding);
+
 
     // set up the lists that we'll use to generate pages
     var classes = taffy(members.classes);
@@ -534,6 +567,12 @@ exports.publish = function(taffyData, opts, tutorials) {
         if (myExternals.length) {
             generate('External: ' + myExternals[0].name, myExternals, helper.longnameToUrl[longname]);
         }
+
+        var myKnockoutBindings = helper.find(kobinding, {longname: longname});
+        if (myKnockoutBindings.length) {
+            generate('KO Binding: ' + myKnockoutBindings[0].name, myKnockoutBindings, helper.longnameToUrl[longname]);
+        }
+
     });
 
     // TODO: move the tutorial functions to templateHelper.js
